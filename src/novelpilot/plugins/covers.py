@@ -110,10 +110,15 @@ def cover_svg(spec: CoverSpec) -> str:
             f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{accent}" opacity="{op:.3f}"/>'
         )
 
+    # Each tspan gets an absolute y. Using relative `dy` here is unreliable:
+    # renderers differ on whether a tspan with an absolute `x` inherits the
+    # parent's baseline or resets it, and the symptom is text off-canvas.
+    line_height = int(size * 1.18)
     tspans = "\n".join(
-        f'    <tspan x="{COVER_PX // 2}" dy="{0 if i == 0 else int(size * 1.18)}">{_esc(line)}</tspan>'
+        f'    <tspan x="{COVER_PX // 2}" y="{start_y + i * line_height}">{_esc(line)}</tspan>'
         for i, line in enumerate(lines)
     )
+    text_bottom = start_y + (n - 1) * line_height
     author_block = ""
     if spec.author:
         author_block = (
@@ -134,11 +139,11 @@ def cover_svg(spec: CoverSpec) -> str:
   {''.join(shapes)}
   <rect x="40" y="40" width="{COVER_PX - 80}" height="{COVER_PX - 80}" fill="none"
         stroke="{accent}" stroke-width="6" opacity="0.55"/>
-  <text font-family="Georgia, 'Times New Roman', serif" font-size="{size}" font-weight="700"
-        fill="{text}" text-anchor="middle" letter-spacing="4">
+  <text font-family="Georgia, 'Times New Roman', serif" font-size="{size}"
+        font-weight="700" fill="{text}" text-anchor="middle" letter-spacing="4">
 {tspans}
   </text>
-  <rect x="{COVER_PX // 2 - 180}" y="{start_y + n * size * 0.9}" width="360" height="8" fill="{accent}"/>
+  <rect x="{COVER_PX // 2 - 180}" y="{text_bottom + int(size * 0.55)}" width="360" height="8" fill="{accent}"/>
 {author_block}
 </svg>
 """
