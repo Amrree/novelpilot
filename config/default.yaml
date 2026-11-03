@@ -1,0 +1,50 @@
+# NovelPilot default configuration.
+#
+# Secrets are never stored here. The provider reads its key from the
+# environment variable named in KEY_ENV (see src/novelpilot/providers/openai_compat.py).
+# Any value below can be overridden by a NOVELPILOT_* environment variable.
+
+# --- storage -------------------------------------------------------------
+data_dir: .novelpilot
+db_path: .novelpilot/novelpilot.db
+exports_dir: exports
+
+# --- provider ------------------------------------------------------------
+# One of: openai | anthropic | groq | openrouter | deepseek | mistral |
+#         ollama | lmstudio | vllm | llamacpp | nvidia | together | fireworks
+provider: openai
+
+# Leave null to use the provider's default endpoint. Set this to point at a
+# local server, e.g. "http://localhost:11434/v1" for Ollama.
+base_url: null
+
+# --- model routing -------------------------------------------------------
+# null means "use the registry's default model for this role".
+#
+# The split matters: planning and judging are a small share of the token
+# bill, prose is almost all of it. Pin a cheap model for plan/summary and an
+# expensive one for prose and you keep quality where it shows.
+models:
+  plan: null      # e.g. "claude-sonnet-4-5" or "gpt-4.1"
+  prose: null     # e.g. "claude-sonnet-4-5"
+  summary: null   # e.g. "gpt-4o-mini"
+  judge: null     # e.g. "gpt-4o-mini"
+
+temperature: 0.85
+judge_temperature: 0.2
+
+# --- generation ----------------------------------------------------------
+target_words: 80000
+words_per_chapter: 2500
+scenes_per_chapter: 3
+max_retries: 3
+request_timeout: 180.0
+continuity_check: true
+auto_repair: false
+
+# --- budget guards -------------------------------------------------------
+# The engine refuses to start a new model call once the project has spent
+# this much. Raise it deliberately, not reflexively.
+max_cost_per_book_usd: 5.00
+max_tokens_per_book: 2000000
+daily_token_budget: 5000000
